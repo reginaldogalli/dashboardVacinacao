@@ -1,19 +1,19 @@
-import pathlib
+# importação daos módulos e bibliotecas
+import pathlib # esta biblioteca foi importada para manipulação do arquivo csv, conforme https://www.youtube.com/watch?v=Gv910_b5ID0&t=784s
 from dash import Dash, html, dcc
 import plotly.express as px
 import pandas as pd
 
-PATH = pathlib.Path(__file__).parent
+PATH = pathlib.Path(__file__).parent #uso do pathlib para leitura do arquivo csv
 DATA_PATH = PATH.joinpath("data").resolve()
-df = pd.read_csv(DATA_PATH.joinpath('vacina_atibaia.csv'), sep=';',
-                 low_memory=False)  # le o arquivo csv como um dataframe
+df = pd.read_csv(DATA_PATH.joinpath("vacina_atibaia.csv"), sep=';', low_memory=False)
 
-app = Dash(__name__)
+df = df.rename_axis('doses').reset_index()# define o indice original como uma coluna chamada doses e cria um novo indice
+doses = df['doses'].iloc[-1]# le o utlimo valor da coluna doses
+
+app = Dash(__name__)#cria a aplicação com o dash
 app.title = "Vacinação Atibaia"
 server = app.server
-
-df = df.rename_axis('doses').reset_index()
-doses = df['doses'].iloc[-1]
 
 # DADOS POR DATA
 data = df.vacina_dataAplicacao.value_counts().to_frame()
@@ -30,9 +30,8 @@ fig3.update_layout({'paper_bgcolor': 'rgba(0, 0, 0, 0)'})
 fig3.update_layout(font_color="white", title_font_color="white", font=dict(family='Andale Mono, monospace'))
 
 # DADOS POR SEXO
-sexo = df.paciente_enumSexoBiologico.value_counts(
-    normalize=True).to_frame()  # converte os dados da coluna sexo para o df sexo como porcentagem
-sexo = sexo.rename_axis('Sexo').reset_index()  # define o �ndice original como uma coluna e cria um novo �ndice
+sexo = df.paciente_enumSexoBiologico.value_counts(normalize=True).to_frame()  # converte os dados da coluna sexo para o df sexo como porcentagem
+sexo = sexo.rename_axis('Sexo').reset_index()  # define o indice original como uma coluna e cria um novo indice
 sexo.rename(columns={'paciente_enumSexoBiologico': 'Porcentagem'}, inplace=True)
 sexo.loc[sexo['Sexo'] == 'F', 'Sexo'] = 'Mulheres'  # altera o item F da coluna sexo
 sexo.loc[sexo['Sexo'] == 'M', 'Sexo'] = 'Homens'  # altera o item M da coluna sexo
@@ -63,7 +62,7 @@ fig4 = px.bar(posto, y='Posto', x='Doses', color_discrete_sequence=["darkslategr
 fig4.update_layout({'paper_bgcolor': 'rgba(0, 0, 0, 0)'})
 fig4.update_layout(font_color="white", title_font_color="white", font=dict(family='Andale Mono, monospace'))
 
-app.layout = html.Div([
+app.layout = html.Div([ # layout da página html do dash
 
     html.Div(
         className="header-container",
